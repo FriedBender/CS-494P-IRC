@@ -1,4 +1,4 @@
-# CS 494P Terrm Project
+# CS 494P Term Project
 
 ### Members
 - Maksim Semchuk
