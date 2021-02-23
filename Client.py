@@ -4,25 +4,29 @@ IRC - Client Application
 """
 
 import socket
+import ChatRooms
+
 
 def IRC_client():
     host = socket.gethostname()
-    port = 5050 #same as server
+    port = ChatRooms.PORT_NUMBER
 
-    client_socket = socket.socket()
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((host, port))
 
-    message_to_send = input(" # ")  #allows for input
+    message_to_send = input(" # ")  # allows for input
 
-    #need to stript message to get rid of any formatting etc
+    # need to stript message to get rid of any formatting etc
     while message_to_send.lower().strip() != 'exit':
-        client_socket.send(message_to_send.encode()) #encode and send message to server
-        data = client_socket.recv(2048).decode()    #receive the response and decode it
+        # encode and send message to server
+        client_socket.send(message_to_send.encode())
+        # receive the response and decode it
+        data = client_socket.recv(ChatRooms.MESSAGE_BUFFER).decode()
 
         print("Message from server: " + data)
 
         message_to_send = input(" # ")
-    client_socket.close()   #close connection
+    client_socket.close()   # close connection
 
 
 if __name__ == "__main__":
