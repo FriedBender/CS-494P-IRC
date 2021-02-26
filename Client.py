@@ -3,27 +3,61 @@ CS 494P Project
 IRC - Client Application
 """
 
-import socket
+import socket, select, sys
 
-def IRC_client():
+BUFFER_SIZE = 2048  # Define the maxiumum message buffer size
+
+# Give the user a prompt for input
+def user_input(username):
+    sys.stdout.write(f"{username} > ")
+    sys.stdout.flush()
+
+def irc_client():
+    # Get the host IP and port for the server
     host = socket.gethostname()
-    port = 5050 #same as server
+    port = 5050
 
-    client_socket = socket.socket()
-    client_socket.connect((host, port))
+    username = input("Username: ")
 
-    message_to_send = input(" # ")  #allows for input
+    # Create the server socket and connect to the server
+    server_socket = socket.socket()
+    server_socket.connect((host, port))
+    print(f"Connected to server at {host}:{port}")
 
-    #need to stript message to get rid of any formatting etc
-    while message_to_send.lower().strip() != 'exit':
-        client_socket.send(message_to_send.encode()) #encode and send message to server
-        data = client_socket.recv(2048).decode()    #receive the response and decode it
+    # Send initial message to server with username
+    server_socket.send(username.encode())
 
-        print("Message from server: " + data)
+    # Loop to receive and send messages
+    while True:
+        # Check stdin for messages from the client and check the server socket for messages from the server
+        socket_list = [sys.stdin, server_socket]
+        read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
 
-        message_to_send = input(" # ")
-    client_socket.close()   #close connection
+        # Handle each socket that is read from
+        for notified_socket in read_sockets:
 
+            # Handle message from server
+            if notified_socket == server_socket:
+                message = server_socket.recv(BUFFER_SIZE).decode()
+                # If server shuts down, recv will return an empty string
+                if not message:
+                    server_socket.shutdown(2)
+                    server_socket.close()
+                    print("\rDisconnected from the server")
+                    sys.exit()
+                # Erase the current line, then print the received message
+                sys.stdout.write('\r')
+                sys.stdout.flush()
+                sys.stdout.write(message)
+                user_input(username)
+                
+            # Handle input from user
+            else:
+                message = sys.stdin.readline()
+                server_socket.send(message.encode())
+                user_input(username)
+
+    server_socket.close()   #close connection
 
 if __name__ == "__main__":
-    IRC_client()
+    irc_client()
