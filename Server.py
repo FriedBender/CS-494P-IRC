@@ -16,10 +16,17 @@ def IRC_server():
     # bind the host address and port to the socket on line above
     IRC_socket.bind((host, port))
 
+    # initialize the new IRC application
+    chatrooms = ChatRooms.IRC_Application()
+    new_default_room = ChatRooms.ChatRoom(ChatRooms.DEFAULT_ROOM_NAME)
+    chatrooms.rooms[ChatRooms.DEFAULT_ROOM_NAME] = new_default_room
     # tell the server how many clients MAX to listen to:
     IRC_socket.listen(ChatRooms.MAX_NUMBER_OF_CLIENTS)
 
     connection, address = IRC_socket.accept()   # accept a new connecction
+    # initialize the new memeber:
+    new_member = ChatRooms.Member(connection, 'Rick', ChatRooms.DEFAULT_ROOM_NAME)
+    chatrooms.rooms[ChatRooms.DEFAULT_ROOM_NAME].Add_New_Member_to_ChatRoom(new_member)
     print("New Connection Established: " + str(address))
 
     # now a loop to keep doing this forever
@@ -31,7 +38,7 @@ def IRC_server():
             print("invalid data recieved")
         print("From user address: " + str(data))
         data = input(" # ")
-        connection.send(data.encode())  # send stuff back to the client
+        chatrooms("default").Send_Message_To_All(data.encode())
 
     connection.close()  # gracefully exit
 
