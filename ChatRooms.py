@@ -20,12 +20,12 @@ class IRC_Application:
 
     def Message_Parse(self, member, message):
         command = {
-            '/join': 'Create or Join an existing room by using /join roomname',
-            '/leave': 'Leave the chatroom',
-            '/list': 'List all Chatrooms',
-            '/pm': 'private message using /pm username',
-            '/man': 'Show instructions',
-            '/quit': 'Quit the server'
+            b'/join': 'Create or Join an existing room by using /join roomname',\
+            b'/leave': 'Leave the chatroom',\
+            b'/list': 'List all Chatrooms',\
+            b'/pm': 'private message using /pm username',\
+            b'/man': 'Show instructions',\
+            b'/quit': 'Quit the server'\
         }
 
         if "name: " in message:
@@ -43,9 +43,9 @@ class IRC_Application:
                         self.rooms[member.activeRoom].Remove_Member_From_ChatRoom(member)
                         self.rooms[room_Name].Add_New_Member_to_ChatRoom(member)
                 else:
-                    create_New_Room = self.rooms(room_Name)
+                    create_New_Room = ChatRoom(room_Name)
                     self.rooms[room_Name] = create_New_Room
-            member.socket.sendall(command.encode())
+            member.socket.sendall(str(command).encode())
 
 
 class ChatRoom:
@@ -55,26 +55,22 @@ class ChatRoom:
         self.members = []   # a simple array to hold members sockets
 
     def Add_New_Member_to_ChatRoom(self, member):
-        message = 'Welcome '
-        + member.name
-        + ' to the server '
-        + self.name
-        + '\n'
-
         self.members.append(member)  # Add the member to the chatroom name
-        self.Send_Message_To_All(member, message.encode)
+        message = member.name + ' as joined the chatroom'
+        self.Send_Message_To_All(member, message)
         # sendall() is NOT sending to ALL, just makes
         # sure that the whole message is sent.
 
     def Remove_Member_From_ChatRoom(self, member):
-        message = b"User :" + member.name.encode() + b" has left " + self.name.encode()
+        message = "User :" + member.name + " has left " + self.name
         self.members.remove(member)
         self.Send_Message_To_All(member, message)
         # sendall() is NOT sending to ALL, just makes
         # sure that the whole message is sent.
 
+    # This will encode the message before sending it out
     def Send_Message_To_All(self, member, message):
-        message = member.name.encode() + b": " + message
+        message = member.name + ': ' + message
         for membersInChatRoom in self.members:
             membersInChatRoom.socket.sendall(message.encode())
             # sendall() is NOT sending to ALL, just makes
