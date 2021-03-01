@@ -3,6 +3,7 @@ CS 494P Project
 IRC - Client Application
 """
 
+
 import socket, select, sys
 
 BUFFER_SIZE = 2048  # Define the maxiumum message buffer size
@@ -11,6 +12,7 @@ BUFFER_SIZE = 2048  # Define the maxiumum message buffer size
 def user_input(username):
     sys.stdout.write(f"{username} > ")
     sys.stdout.flush()
+
 
 def irc_client():
     # Get the host IP and port for the server

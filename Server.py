@@ -15,6 +15,7 @@ def message_broadcast(sender_socket, message):
     user = CLIENTS[sender_socket]
     print(f"{user} > {message}", end='\r')
 
+
     # Send the message to all clients except the one that sent the messaage
     for client_socket in CLIENTS:
         if client_socket != sender_socket:
@@ -35,8 +36,9 @@ def irc_server():
 
     SOCKET_LIST.append(server_socket)
 
-    #now a loop to keep doing this forever
-    #TODO: Fix this to exit normally
+
+    # now a loop to keep doing this forever
+    # TODO: Fix this to exit normally
     while True:
         # Populate a list of sockets that have been read
         read_sockets, write_sockets, err_sockets = select.select(SOCKET_LIST, [], [])
