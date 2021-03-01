@@ -3,47 +3,72 @@ CS 494P Project
 IRC - Server Application
 """
 
-import socket
-import ChatRooms
+import socket, select, sys
+
+NUM_CLIENTS = 10    # Number of clients the server can handle
+BUFFER_SIZE = 2048  # Global message data buffer
+SOCKET_LIST = []   # Maintain a list of socket connections
+CLIENTS = {}    # Maintain a dictionary of clients. The key is the socket, the value is the username
+
+# Broadcast a message to all clients
+def message_broadcast(sender_socket, message):
+    user = CLIENTS[sender_socket]
+    print(f"{user} > {message}", end='\r')
 
 
-def IRC_server():
-    # get the host information:
+    # Send the message to all clients except the one that sent the messaage
+    for client_socket in CLIENTS:
+        if client_socket != sender_socket:
+                client_socket.send(f"{user} > {message}".encode())
+
+
+def irc_server():
+    #get the host information:
     host = socket.gethostname()
-    port = ChatRooms.PORT_NUMBER
-    # the socket instance, specifying that it is a TCP connection
-    IRC_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # bind the host address and port to the socket on line above
-    IRC_socket.bind((host, port))
+    port = 5050 #non standard port
 
-    # initialize the new IRC application
-    IRCchatrooms = ChatRooms.IRC_Application()
-    new_Chat_Room_To_Add = ChatRooms.ChatRoom(ChatRooms.DEFAULT_ROOM_NAME)
-    IRCchatrooms.rooms[ChatRooms.DEFAULT_ROOM_NAME] = new_Chat_Room_To_Add
-    # tell the server how many clients MAX to listen to:
-    IRC_socket.listen(ChatRooms.MAX_NUMBER_OF_CLIENTS)
+    server_socket = socket.socket()    #the server socket instance
+    server_socket.bind((host, port))   #bind the host address and port to the socket on line above
+    print(f"Server socket bound to {host}:{port}")
 
-    connection, address = IRC_socket.accept()   # accept a new connecction
-    # initialize the new memeber:
-    new_member = ChatRooms.Member(connection, 'Rick', ChatRooms.DEFAULT_ROOM_NAME)
-    IRCchatrooms.rooms[ChatRooms.DEFAULT_ROOM_NAME].Add_New_Member_to_ChatRoom(new_member)
-    print("New Connection Established: " + str(address))
+    #tell the server how many clients MAX to listen to:
+    server_socket.listen(NUM_CLIENTS)
+
+    SOCKET_LIST.append(server_socket)
+
 
     # now a loop to keep doing this forever
     # TODO: Fix this to exit normally
     while True:
-        # This handles the sending and recieving of data from the server.
-        data = connection.recv(ChatRooms.MESSAGE_BUFFER).decode()
-        IRCchatrooms.Message_Parse(new_member, data)
-        if not data:
-            print("invalid data recieved")
-        print("From user address: " + str(data))
-        data = input(" # ")
-        send_To_This_Room = IRCchatrooms.rooms[ChatRooms.DEFAULT_ROOM_NAME]
-        send_To_This_Room.Send_Message_To_All(new_member, data)
+        # Populate a list of sockets that have been read
+        read_sockets, write_sockets, err_sockets = select.select(SOCKET_LIST, [], [])
 
-    connection.close()  # gracefully exit
+        for notified_socket in read_sockets:
+
+            # Accept a new connection, add client socket to socket_list, and add client username to client list
+            if notified_socket == server_socket:
+                client_socket, client_address = server_socket.accept()
+                SOCKET_LIST.append(client_socket)
+                print(f"New connection established from {client_address}")
+
+                # Initial message data will be username
+                user = client_socket.recv(BUFFER_SIZE).decode()
+                CLIENTS[client_socket] = user
+                client_socket.send(f"Welcome to the server, {user}\n".encode())
+
+            else:
+                message = notified_socket.recv(BUFFER_SIZE).decode()
+                
+                # If client disconnected, message will be empty
+                if not message:
+                    notified_socket.close()
+                    SOCKET_LIST.remove(notified_socket)
+                    CLIENTS.pop(notified_socket)
+                else:
+                    message_broadcast(notified_socket, message)
+
+    server_socket.close()  #gracefully exit
 
 
 if __name__ == '__main__':
-    IRC_server()
+    irc_server()
