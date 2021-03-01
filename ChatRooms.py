@@ -31,7 +31,7 @@ class IRC_Application:
         if "name: " in message:
             member.name = message.split()[1]
 
-        elif "/join" in message:
+        elif "/join " in message:
             if len(message.split()) >= 2:   # first part of the string will be a command
                 #   Second part will be the room name.
 
