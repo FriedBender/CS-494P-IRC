@@ -16,16 +16,16 @@ class IRC_Application:
         # since key:value pairs are easier to search
 
     def getUserName(self, new_connected_member):
-        new_connected_member.socket.sendall(b'What is your name?: ')
+        new_connected_member.sendall(b'What is your name?: ')
 
     def Message_Parse(self, member, message):
         command = {
-            b'/join': 'Create or Join an existing room by using /join roomname',\
-            b'/leave': 'Leave the chatroom',\
-            b'/list': 'List all Chatrooms',\
-            b'/pm': 'private message using /pm username',\
-            b'/man': 'Show instructions',\
-            b'/quit': 'Quit the server'\
+            b'/join': 'Create or Join an existing room by using /join roomname',
+            b'/leave': 'Leave the chatroom',
+            b'/list': 'List all Chatrooms',
+            b'/pm': 'private message using /pm username',
+            b'/man': 'Show instructions',
+            b'/quit': 'Quit the server'
         }
 
         if "name: " in message:
