@@ -75,7 +75,7 @@ def irc_server():
                     SOCKET_LIST.remove(notified_socket)
                     CLIENTS.pop(notified_socket)
                 else:
-                    message_broadcast(notified_socket, message)
+                    irc_Application.Message_Parse(notified_socket, message)
 
     server_socket.close()  #gracefully exit
 
