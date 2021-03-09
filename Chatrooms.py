@@ -28,6 +28,18 @@ class IRC_Application:
         room_list = room_list + '\n'
         return room_list
 
+    def list_chatmates_in_members_chatrooms(self, sender_socket, sender_name, message):
+        list_of_members = []
+
+        for room in self.rooms:
+            if sender_socket in self.rooms[room].client_sockets:
+                list_of_members.append(room)
+                for member in self.rooms[room].client_sockets:
+                    if sender_socket != member:
+                        list_of_members.append(getattr(member, 'username'))
+
+        print(list_of_members)
+
     # Check if the room name begins with '#', check if user is already in the room,
     # create the room if it does not exist, then join the room the user specified
     def join_room(self, room_to_join, sender_socket, sender_name):
@@ -124,6 +136,10 @@ class IRC_Application:
                     message_to_send.append('\n')
 
                     self.message_rooms(rooms_to_send, sender_socket, sender_name, convert_to_str)
+        # list all members in current room
+        elif message.split()[0] == "/members":
+            self.list_chatmates_in_members_chatrooms(sender_socket, sender_name, message)
+
         # elif message.split()[0] == "/pm":
 
 
