@@ -4,6 +4,7 @@ import socket
 # Globals
 DEFAULT_ROOM_NAME = '#default'
 
+
 # Broadcast a message to the server and to all clients in that room
 def message_broadcast(room, sender_name, sender_socket, message):
     print(f"{room.name} : {sender_name} > {message}", end='\r')
@@ -18,7 +19,6 @@ def message_broadcast(room, sender_name, sender_socket, message):
 class IRC_Application:
     def __init__(self):
         self.rooms = {}  # Create a dictionary of rooms with the room name as the key and the room object as the value
-    
 
     # Function to create a space-separated list of rooms
     def list_all_rooms(self):
@@ -27,7 +27,6 @@ class IRC_Application:
             room_list = room_list + room.name + ' '
         room_list = room_list + '\n'
         return room_list
-
 
     # Check if the room name begins with '#', check if user is already in the room,
     # create the room if it does not exist, then join the room the user specified
@@ -39,11 +38,6 @@ class IRC_Application:
                 new_room = Chatroom(room_to_join)
                 self.rooms[room_to_join] = new_room
             self.rooms[room_to_join].add_new_client_to_chatroom(sender_name, sender_socket)
-        """
-        if sender_socket is in self.rooms[room_to_join].client_sockets:
-            sender_socket.send("Error: You are already in that room\n")
-        """
-
 
     # Check if the room exists, check if user is in the room,
     # remove user from room and delete room if it is empty
@@ -57,7 +51,6 @@ class IRC_Application:
             if not self.rooms[room_to_leave].client_sockets:
                 self.rooms.pop(room_to_leave)
 
-
     # Check if rooms exist, check if user is in rooms,
     # if room exists and user is in it then send message, otherwise skip
     def message_rooms(self, rooms_to_send, sender_socket, sender_name, message):
@@ -70,13 +63,12 @@ class IRC_Application:
                 continue
             message_broadcast(self.rooms[room], sender_name, sender_socket, message)
 
-
     def message_parse(self, sender_socket, sender_name, message):
         # Case where message is not a command:
         # The message is sent to the default channel
         if message[0] != '/':
             message_broadcast(self.rooms[DEFAULT_ROOM_NAME], sender_name, sender_socket, message)
-        
+
         # Case where user wants to list all rooms:
         elif message.split()[0] == "/list" and len(message.split()) == 1:
             room_list = self.list_all_rooms()
@@ -84,9 +76,12 @@ class IRC_Application:
 
         # Case where user wants to join a room:
         elif message.split()[0] == "/join":
-            room_to_join = message.split()[1]
-            self.join_room(room_to_join, sender_socket, sender_name)
-        
+            length = len(message.split())
+            if len(message.strip().split()) < 2:
+                sender_socket.send(f"/join requires a #roomname argument.\nPlease enter: /join #roomname\n".encode())
+            else:
+                self.join_room(message.split()[1], sender_socket, sender_name)
+
         # Case where user wants to leave a room:
         elif message.split()[0] == "/leave":
             room_to_leave = message.split()[1]
@@ -110,7 +105,6 @@ class IRC_Application:
             print(*new_message)
 
             self.message_rooms(rooms_to_send, sender_socket, sender_name, new_message)
-        
         #elif message.split()[0] == "/pm":
 
 

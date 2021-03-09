@@ -7,6 +7,7 @@ IRC - Client Application
 import socket, select, sys, Server
 from Server import BUFFER_SIZE
 
+
 # Give the user a prompt for input
 def user_input(username):
     sys.stdout.write(f"{username} > ")
@@ -32,7 +33,7 @@ def irc_client():
     while True:
         # Check stdin for messages from the client and check the server socket for messages from the server
         socket_list = [sys.stdin, server_socket]
-        read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
+        read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
 
         # Handle each socket that is read from
         for notified_socket in read_sockets:
@@ -51,14 +52,15 @@ def irc_client():
                 sys.stdout.flush()
                 sys.stdout.write(message)
                 user_input(username)
-                
+
             # Handle input from user
             else:
                 message = sys.stdin.readline()
                 server_socket.send(message.encode())
                 user_input(username)
 
-    server_socket.close()   #close connection
+    server_socket.close()   # close connection
+
 
 if __name__ == "__main__":
     irc_client()
