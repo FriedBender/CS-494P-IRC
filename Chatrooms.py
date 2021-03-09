@@ -34,10 +34,17 @@ class IRC_Application:
         if room_to_join[0] != '#':
             sender_socket.send("Error: Room name must begin with a '#'\n".encode())
         else:
-            if room_to_join not in self.rooms:
+            if room_to_join not in self.rooms:  # Assume that the room does not exist yet
                 new_room = Chatroom(room_to_join)
                 self.rooms[room_to_join] = new_room
-            self.rooms[room_to_join].add_new_client_to_chatroom(sender_name, sender_socket)
+                self.rooms[room_to_join].add_new_client_to_chatroom(sender_name, sender_socket)
+            else:  # otherwise, go through the room members to make sure that the sender is not in it already
+                for current_members in self.rooms[room_to_join].client_sockets:
+                    if sender_socket == current_members:
+                        sender_socket.send(f"Error: You are already in the room: {room_to_join}\n".encode())
+                    else:
+                        # if we are here then the room exists and the sender is not in it.
+                        self.rooms[room_to_join].add_new_client_to_chatroom(sender_name, sender_socket)
 
     # Check if the room exists, check if user is in the room,
     # remove user from room and delete room if it is empty
@@ -100,21 +107,23 @@ class IRC_Application:
             message_to_send = []
             convert_to_str = ""  # empty string to convert array into string
             # Add all the arguments beginning with # to a list of rooms
-            for word in message.split():
-                if word[0] == '#':
-                    rooms_to_send.append(word)
-                elif word[0] == '/':
-                    continue
-                else:   # Assume the message is the string after the last room
-                    message_to_send.append(word)
+            if len(message) < 2:
+                sender_socket.send(f"/send requires a #roomname(s) argument(s).\nPlease enter: /join #roomname(s)\n".encode())
+            else:
+                for word in message.split():
+                    if word[0] == '#':
+                        rooms_to_send.append(word)
+                    elif word[0] == '/':
+                        continue
+                    else:   # Assume the message is the string after the last room
+                        message_to_send.append(word)
+                if rooms_to_send.count == 0:
+                    sender_socket.send(f"/send at least one #roomname(s) argument(s).\nPlease enter: /join #roomname(s)\n".encode())
+                else:
+                    convert_to_str = ' '.join([str(word) for word in message_to_send])
+                    message_to_send.append('\n')
 
-            print(rooms_to_send)
-            print(message_to_send)
-
-            convert_to_str = ' '.join([str(word) for word in message_to_send])
-            message_to_send.append('\n')
-
-            self.message_rooms(rooms_to_send, sender_socket, sender_name, convert_to_str)
+                    self.message_rooms(rooms_to_send, sender_socket, sender_name, convert_to_str)
         # elif message.split()[0] == "/pm":
 
 

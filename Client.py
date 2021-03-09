@@ -4,8 +4,8 @@ IRC - Client Application
 """
 
 
-import socket, select, sys, Server
-from Server import BUFFER_SIZE
+import socket, select, sys, Server  # TODO remove socket since we do not use it here either
+# from Server import BUFFER_SIZE TODO remove since we likely do not need this
 
 
 # Give the user a prompt for input
