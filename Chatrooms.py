@@ -36,7 +36,7 @@ class IRC_Application:
                 list_of_members.append(room)
                 for member in self.rooms[room].client_sockets:
                     if sender_socket != member:
-                        list_of_members.append(getattr(member, 'username'))
+                        list_of_members.append()
 
         print(list_of_members)
 
