@@ -12,7 +12,7 @@ def message_broadcast(room, sender_name, sender_socket, message):
     # Send the message to all clients except the one that sent the messaage
     for client_socket in room.client_sockets:
         if client_socket != sender_socket:
-                client_socket.send(f"{room.name} : {sender_name} > {message}".encode())
+            client_socket.send(f"{room.name} : {sender_name} > {message}".encode())
 
 
 # The container that has rooms, which have lists of clients
@@ -97,20 +97,25 @@ class IRC_Application:
         # Pass the rest of the string along as the message
         elif message.split()[0] == "/send":
             rooms_to_send = []
+            message_to_send = []
+            convert_to_str = ""  # empty string to convert array into string
             # Add all the arguments beginning with # to a list of rooms
-            for word in message.split()[1]:
+            for word in message.split():
                 if word[0] == '#':
                     rooms_to_send.append(word)
-                else:
-                    break
-            # Assume the message is the string after the last room
+                elif word[0] == '/':
+                    continue
+                else:   # Assume the message is the string after the last room
+                    message_to_send.append(word)
 
-            print(*rooms_to_send)
-            new_message = message.split(rooms_to_send[-1], 1)[1:]
-            print(*new_message)
+            print(rooms_to_send)
+            print(message_to_send)
 
-            self.message_rooms(rooms_to_send, sender_socket, sender_name, new_message)
-        #elif message.split()[0] == "/pm":
+            convert_to_str = ' '.join([str(word) for word in message_to_send])
+            message_to_send.append('\n')
+
+            self.message_rooms(rooms_to_send, sender_socket, sender_name, convert_to_str)
+        # elif message.split()[0] == "/pm":
 
 
 class Chatroom:
