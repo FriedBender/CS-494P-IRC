@@ -62,14 +62,15 @@ def irc_server():
                 # and client will be removed from socket list and client dictionary
                 if not message:
                     notified_socket.close()
-                    SOCKET_LIST.remove(notified_socket)
-                    CLIENTS.pop(notified_socket)
 
                     # TODO Remove client from all rooms
                     # THIS SEEMS TO WORK NOW! Tested!
                     for a_room in irc_instance.rooms:
                         if notified_socket in irc_instance.rooms[a_room].client_sockets:
-                            irc_instance.rooms[a_room].client_sockets.remove(notified_socket)
+                            irc_instance.rooms[a_room].remove_client_from_chatroom(CLIENTS[notified_socket], notified_socket)
+                    
+                    SOCKET_LIST.remove(notified_socket)
+                    CLIENTS.pop(notified_socket)
 
                 # Send the message to the parser to be handled
                 else:
