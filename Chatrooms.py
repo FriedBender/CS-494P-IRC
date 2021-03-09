@@ -42,17 +42,14 @@ class IRC_Application:
     # Check if the room exists, check if user is in the room,
     # remove user from room and delete room if it is empty
     def leave_room(self, room_to_leave, sender_socket, sender_name):
-        if room_to_leave[0] != '#':
-            sender_socket.send(f"\nError: The format to leave a room is: /leave #roomname.\n".encode())
+        if room_to_leave not in self.rooms:
+            sender_socket.send("Error: Room does not exist\n".encode())
+        elif sender_socket not in self.rooms[room_to_leave].client_sockets:
+            sender_socket.send("Error: You are not in that room\n".encode())
         else:
-            if room_to_leave not in self.rooms:
-                sender_socket.send("Error: Room does not exist\n".encode())
-            elif sender_socket not in self.rooms[room_to_leave].client_sockets:
-                sender_socket.send("Error: You are not in that room\n".encode())
-            else:
-                self.rooms[room_to_leave].remove_client_from_chatroom(sender_name, sender_socket)
-                if not self.rooms[room_to_leave].client_sockets:
-                    self.rooms.pop(room_to_leave)
+            self.rooms[room_to_leave].remove_client_from_chatroom(sender_name, sender_socket)
+            if not self.rooms[room_to_leave].client_sockets:
+                self.rooms.pop(room_to_leave)
 
     # Check if rooms exist, check if user is in rooms,
     # if room exists and user is in it then send message, otherwise skip
@@ -88,7 +85,12 @@ class IRC_Application:
         elif message.split()[0] == "/leave":
             if len(message.strip().split()) < 2:
                 sender_socket.send(f"/leave requires a #roomname argument.\nPlease enter: /leave #roomname\n".encode())
-            self.leave_room(message.split()[1], sender_socket, sender_name)
+            else:
+                room_to_leave = message.strip().split()[1]
+                if room_to_leave[0] != "#":
+                    sender_socket.send(f"/leave requires a #roomname argument to begin with '#'.\n".encode())
+                else:
+                    self.leave_room(room_to_leave, sender_socket, sender_name)
 
         # Case where user wants to send messages to rooms:
         # Parse the string for rooms and add rooms to a list
