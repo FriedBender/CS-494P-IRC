@@ -6,8 +6,8 @@ IRC - Client Application
 
 import socket, select, sys, Server
 from Server import BUFFER_SIZE
-
-
+# Name array so all user names can be unique
+ListNames = []
 # Give the user a prompt for input
 def user_input(username):
     sys.stdout.write(f"{username} > ")
@@ -20,6 +20,12 @@ def irc_client():
     port = 5050
 
     username = input("Enter username: ")
+    while True:
+        if username is not ListNames:
+            ListNames.append(username)
+            break
+        else:
+             username = input("Please enter in a unique name: ")
 
     # Create the server socket and connect to the server
     server_socket = socket.socket()
