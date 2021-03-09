@@ -4,9 +4,8 @@ IRC - Client Application
 """
 
 
-import socket, select, sys
-
-BUFFER_SIZE = 2048  # Define the maxiumum message buffer size
+import socket, select, sys, Server
+from Server import BUFFER_SIZE
 
 # Give the user a prompt for input
 def user_input(username):
@@ -19,7 +18,7 @@ def irc_client():
     host = socket.gethostname()
     port = 5050
 
-    username = input("Username: ")
+    username = input("Enter username: ")
 
     # Create the server socket and connect to the server
     server_socket = socket.socket()
@@ -40,7 +39,7 @@ def irc_client():
 
             # Handle message from server
             if notified_socket == server_socket:
-                message = server_socket.recv(BUFFER_SIZE).decode()
+                message = server_socket.recv(Server.BUFFER_SIZE).decode()
                 # If server shuts down, recv will return an empty string
                 if not message:
                     server_socket.shutdown(2)
